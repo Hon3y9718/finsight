@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -23,6 +24,7 @@ import {
 } from "lucide-react";
 import { UserNav } from "./user-nav";
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 
 export default function AppSidebar() {
   const pathname = usePathname();
@@ -43,46 +45,60 @@ export default function AppSidebar() {
 
         <SidebarMenu className="flex-1 px-4">
           <SidebarMenuItem>
-            <SidebarMenuButton href="/" tooltip="Dashboard" isActive={isActive('/')}>
-              <LayoutDashboard />
-              <span>Dashboard</span>
-            </SidebarMenuButton>
+            <Link href="/" passHref legacyBehavior>
+              <SidebarMenuButton as="a" tooltip="Dashboard" isActive={isActive('/')}>
+                <LayoutDashboard />
+                <span>Dashboard</span>
+              </SidebarMenuButton>
+            </Link>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton href="/transactions" tooltip="Transactions" isActive={isActive('/transactions')}>
-              <ArrowRightLeft />
-              <span>Transactions</span>
-            </SidebarMenuButton>
+            <Link href="/transactions" passHref legacyBehavior>
+              <SidebarMenuButton as="a" tooltip="Transactions" isActive={isActive('/transactions')}>
+                <ArrowRightLeft />
+                <span>Transactions</span>
+              </SidebarMenuButton>
+            </Link>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton href="/income" tooltip="Income" isActive={isActive('/income')}>
-              <Wallet/>
-              <span>Income</span>
-            </SidebarMenuButton>
+            <Link href="/income" passHref legacyBehavior>
+              <SidebarMenuButton as="a" tooltip="Income" isActive={isActive('/income')}>
+                <Wallet/>
+                <span>Income</span>
+              </SidebarMenuButton>
+            </Link>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton href="/investments" tooltip="Investments" isActive={isActive('/investments')}>
-              <TrendingUp />
-              <span>Investments</span>
-            </SidebarMenuButton>
+            <Link href="/investments" passHref legacyBehavior>
+              <SidebarMenuButton as="a" tooltip="Investments" isActive={isActive('/investments')}>
+                <TrendingUp />
+                <span>Investments</span>
+              </SidebarMenuButton>
+            </Link>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton href="/loans" tooltip="Loans" isActive={isActive('/loans')}>
-              <Landmark />
-              <span>Loans</span>
-            </SidebarMenuButton>
+            <Link href="/loans" passHref legacyBehavior>
+              <SidebarMenuButton as="a" tooltip="Loans" isActive={isActive('/loans')}>
+                <Landmark />
+                <span>Loans</span>
+              </SidebarMenuButton>
+            </Link>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton href="/subscriptions" tooltip="Subscriptions" isActive={isActive('/subscriptions')}>
-              <Repeat />
-              <span>Subscriptions</span>
-            </SidebarMenuButton>
+            <Link href="/subscriptions" passHref legacyBehavior>
+              <SidebarMenuButton as="a" tooltip="Subscriptions" isActive={isActive('/subscriptions')}>
+                <Repeat />
+                <span>Subscriptions</span>
+              </SidebarMenuButton>
+            </Link>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton href="/reports" tooltip="Reports" isActive={isActive('/reports')}>
-              <BarChart3 />
-              <span>Reports</span>
-            </SidebarMenuButton>
+            <Link href="/reports" passHref legacyBehavior>
+              <SidebarMenuButton as="a" tooltip="Reports" isActive={isActive('/reports')}>
+                <BarChart3 />
+                <span>Reports</span>
+              </SidebarMenuButton>
+            </Link>
           </SidebarMenuItem>
         </SidebarMenu>
         
