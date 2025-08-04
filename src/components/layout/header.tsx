@@ -1,16 +1,41 @@
+"use client";
+
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Plus, Upload } from "lucide-react";
 import { AddTransactionSheet } from "../dashboard/add-transaction-sheet";
 import { CsvImportDialog } from "../dashboard/csv-import-dialog";
+import { usePathname } from "next/navigation";
+
+function getTitle(pathname: string) {
+  switch (pathname) {
+    case "/":
+      return "Dashboard";
+    case "/transactions":
+      return "Transactions";
+    case "/income":
+      return "Income";
+    case "/investments":
+      return "Investments";
+    case "/loans":
+      return "Loans";
+    case "/subscriptions":
+      return "Subscriptions";
+    default:
+      return "Dashboard";
+  }
+}
 
 export default function Header() {
+  const pathname = usePathname();
+  const title = getTitle(pathname);
+
   return (
     <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background/80 backdrop-blur-sm px-4 md:px-6">
       <div className="md:hidden">
         <SidebarTrigger />
       </div>
-      <h1 className="text-lg font-semibold md:text-2xl">Dashboard</h1>
+      <h1 className="text-lg font-semibold md:text-2xl">{title}</h1>
       <div className="ml-auto flex items-center gap-2">
         <CsvImportDialog>
           <Button variant="outline" size="sm">

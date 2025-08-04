@@ -43,37 +43,37 @@ export default function AppSidebar() {
 
         <SidebarMenu className="flex-1 px-4">
           <SidebarMenuItem>
-            <SidebarMenuButton href="#" tooltip="Dashboard" isActive={isActive('/')}>
+            <SidebarMenuButton href="/" tooltip="Dashboard" isActive={isActive('/')}>
               <LayoutDashboard />
               <span>Dashboard</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton href="#" tooltip="Transactions">
+            <SidebarMenuButton href="/transactions" tooltip="Transactions" isActive={isActive('/transactions')}>
               <ArrowRightLeft />
               <span>Transactions</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton href="#" tooltip="Income">
+            <SidebarMenuButton href="/income" tooltip="Income" isActive={isActive('/income')}>
               <Wallet/>
               <span>Income</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton href="#" tooltip="Investments">
+            <SidebarMenuButton href="/investments" tooltip="Investments" isActive={isActive('/investments')}>
               <TrendingUp />
               <span>Investments</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton href="#" tooltip="Loans">
+            <SidebarMenuButton href="/loans" tooltip="Loans" isActive={isActive('/loans')}>
               <Landmark />
               <span>Loans</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton href="#" tooltip="Subscriptions">
+            <SidebarMenuButton href="/subscriptions" tooltip="Subscriptions" isActive={isActive('/subscriptions')}>
               <Repeat />
               <span>Subscriptions</span>
             </SidebarMenuButton>
