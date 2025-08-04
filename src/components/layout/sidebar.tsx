@@ -45,56 +45,56 @@ export default function AppSidebar() {
 
         <SidebarMenu className="flex-1 px-4">
           <SidebarMenuItem>
-            <Link href="/" passHref legacyBehavior>
-              <SidebarMenuButton as="a" tooltip="Dashboard" isActive={isActive('/')}>
+            <Link href="/">
+              <SidebarMenuButton tooltip="Dashboard" isActive={isActive('/')}>
                 <LayoutDashboard />
                 <span>Dashboard</span>
               </SidebarMenuButton>
             </Link>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <Link href="/transactions" passHref legacyBehavior>
-              <SidebarMenuButton as="a" tooltip="Transactions" isActive={isActive('/transactions')}>
+            <Link href="/transactions">
+              <SidebarMenuButton tooltip="Transactions" isActive={isActive('/transactions')}>
                 <ArrowRightLeft />
                 <span>Transactions</span>
               </SidebarMenuButton>
             </Link>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <Link href="/income" passHref legacyBehavior>
-              <SidebarMenuButton as="a" tooltip="Income" isActive={isActive('/income')}>
+            <Link href="/income">
+              <SidebarMenuButton tooltip="Income" isActive={isActive('/income')}>
                 <Wallet/>
                 <span>Income</span>
               </SidebarMenuButton>
             </Link>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <Link href="/investments" passHref legacyBehavior>
-              <SidebarMenuButton as="a" tooltip="Investments" isActive={isActive('/investments')}>
+            <Link href="/investments">
+              <SidebarMenuButton tooltip="Investments" isActive={isActive('/investments')}>
                 <TrendingUp />
                 <span>Investments</span>
               </SidebarMenuButton>
             </Link>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <Link href="/loans" passHref legacyBehavior>
-              <SidebarMenuButton as="a" tooltip="Loans" isActive={isActive('/loans')}>
+            <Link href="/loans">
+              <SidebarMenuButton tooltip="Loans" isActive={isActive('/loans')}>
                 <Landmark />
                 <span>Loans</span>
               </SidebarMenuButton>
             </Link>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <Link href="/subscriptions" passHref legacyBehavior>
-              <SidebarMenuButton as="a" tooltip="Subscriptions" isActive={isActive('/subscriptions')}>
+            <Link href="/subscriptions">
+              <SidebarMenuButton tooltip="Subscriptions" isActive={isActive('/subscriptions')}>
                 <Repeat />
                 <span>Subscriptions</span>
               </SidebarMenuButton>
             </Link>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <Link href="/reports" passHref legacyBehavior>
-              <SidebarMenuButton as="a" tooltip="Reports" isActive={isActive('/reports')}>
+            <Link href="/reports">
+              <SidebarMenuButton tooltip="Reports" isActive={isActive('/reports')}>
                 <BarChart3 />
                 <span>Reports</span>
               </SidebarMenuButton>
