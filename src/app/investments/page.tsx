@@ -18,7 +18,7 @@ import { investments } from "@/lib/data";
 export default function InvestmentsPage() {
   const investmentTransactions = investments;
   return (
-    <div className="p-4 sm:p-6 lg:p-8">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>Investments</CardTitle>

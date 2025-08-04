@@ -20,7 +20,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 export default function IncomePage() {
     const incomeTransactions = transactions.filter(t => t.type === 'income');
   return (
-    <div className="p-4 sm:p-6 lg:p-8">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>Income</CardTitle>
