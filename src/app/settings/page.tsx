@@ -13,9 +13,20 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
 import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 
 export default function SettingsPage() {
   const { setTheme, theme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+
+  if (!mounted) {
+    return null
+  }
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6">
@@ -28,7 +39,7 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent className="space-y-4">
             <Label>Theme</Label>
-            <RadioGroup defaultValue={theme} onValueChange={setTheme} className="flex space-x-4">
+            <RadioGroup value={theme} onValueChange={setTheme} className="flex space-x-4">
                 <div>
                     <RadioGroupItem value="light" id="light" className="peer sr-only" />
                     <Label htmlFor="light" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
