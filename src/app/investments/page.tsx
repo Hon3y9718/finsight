@@ -1,3 +1,4 @@
+
 import {
   Card,
   CardContent,
@@ -13,15 +14,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { transactions } from "@/lib/data";
-import { TrendingUp } from "lucide-react";
+import { investments } from "@/lib/data";
 
 export default function InvestmentsPage() {
-  const investmentTransactions = transactions.filter(
-    (t) => t.category === "Investment"
-  );
+  const investmentTransactions = investments;
   return (
-    <div className="p-4 sm:p-6 lg:p-8">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>Investments</CardTitle>
@@ -44,10 +42,10 @@ export default function InvestmentsPage() {
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <div className="p-2 bg-blue-500/10 rounded-full">
-                        <TrendingUp className="h-5 w-5 text-blue-500" />
+                        <transaction.icon className="h-5 w-5 text-blue-500" />
                       </div>
                       <div className="grid gap-0.5">
-                        <p className="font-medium">{transaction.category}</p>
+                        <p className="font-medium">{transaction.asset}</p>
                         <p className="text-xs text-muted-foreground">
                           {transaction.description}
                         </p>

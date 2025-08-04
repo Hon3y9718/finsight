@@ -1,3 +1,4 @@
+
 import {
   Card,
   CardContent,
@@ -19,7 +20,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export default function TransactionsPage() {
   return (
-    <div className="p-4 sm:p-6 lg:p-8">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>All Transactions</CardTitle>

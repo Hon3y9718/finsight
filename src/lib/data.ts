@@ -1,16 +1,14 @@
-import type { Transaction } from "@/lib/types";
+import type { Transaction, Investment, Loan, Subscription } from "@/lib/types";
 import {
   Banknote,
   Car,
-  ChevronDown,
-  CreditCard,
-  Gift,
   Home,
   PiggyBank,
-  Plus,
   ReceiptText,
+  Repeat,
   TrendingUp,
   Wallet,
+  Landmark,
 } from "lucide-react";
 
 export const transactions: Transaction[] = [
@@ -51,24 +49,6 @@ export const transactions: Transaction[] = [
     icon: Home,
   },
   {
-    id: "5",
-    date: "2024-07-12",
-    amount: 15.0,
-    category: "Subscriptions",
-    type: "expense",
-    description: "Netflix monthly subscription",
-    icon: ReceiptText,
-  },
-  {
-    id: "6",
-    date: "2024-07-11",
-    amount: 500,
-    category: "Investment",
-    type: "expense",
-    description: "Stocks investment",
-    icon: TrendingUp,
-  },
-  {
     id: "7",
     date: "2024-07-10",
     amount: 250,
@@ -78,3 +58,40 @@ export const transactions: Transaction[] = [
     icon: PiggyBank,
   },
 ];
+
+export const investments: Investment[] = [
+    {
+        id: "1",
+        date: "2024-07-11",
+        amount: 500,
+        asset: "Stocks",
+        type: "investment",
+        description: "Stocks investment",
+        icon: TrendingUp,
+    }
+];
+
+export const loans: Loan[] = [
+    {
+      id: "1",
+      lender: "Community Bank",
+      initialAmount: 25000,
+      currentBalance: 12500,
+      interestRate: 5.5,
+      paymentDate: "2024-08-01",
+      type: "loan",
+      icon: Landmark
+    },
+];
+
+export const subscriptions: Subscription[] = [
+    {
+        id: "1",
+        name: "Netflix",
+        amount: 15.0,
+        renewalDate: "2024-07-28",
+        type: "subscription",
+        description: "Monthly subscription",
+        icon: Repeat,
+    }
+]

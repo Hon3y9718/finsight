@@ -19,7 +19,6 @@ import {
   Landmark,
   Repeat,
   BarChart3,
-  Settings,
   Wallet,
 } from "lucide-react";
 import { UserNav } from "./user-nav";

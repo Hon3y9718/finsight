@@ -15,6 +15,7 @@ export type Investment = {
   asset: string;
   type: "investment";
   description: string;
+  icon: React.ComponentType<{ className?: string }>;
 };
 
 export type Loan = {
@@ -25,6 +26,7 @@ export type Loan = {
   interestRate: number;
   paymentDate: string;
   type: "loan";
+  icon: React.ComponentType<{ className?: string }>;
 };
 
 export type Subscription = {
@@ -33,6 +35,8 @@ export type Subscription = {
   amount: number;
   renewalDate: string;
   type: "subscription";
+  description: string;
+  icon: React.ComponentType<{ className?: string }>;
 };
 
 export type FinancialData = Transaction | Investment | Loan | Subscription;

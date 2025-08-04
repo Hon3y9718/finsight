@@ -1,3 +1,4 @@
+
 import {
   Card,
   CardContent,
@@ -8,7 +9,7 @@ import {
 
 export default function ReportsPage() {
   return (
-    <div className="p-4 sm:p-6 lg:p-8">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6">
        <Card>
         <CardHeader>
           <CardTitle>Reports</CardTitle>
