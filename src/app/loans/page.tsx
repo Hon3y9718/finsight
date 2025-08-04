@@ -5,20 +5,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Landmark } from "lucide-react";
+import { loans } from "@/lib/data";
 
 export default function LoansPage() {
-  const loans = [
-    {
-      id: "1",
-      lender: "Community Bank",
-      initialAmount: 25000,
-      currentBalance: 12500,
-      interestRate: 5.5,
-      paymentDate: "2024-08-01",
-    },
-  ];
-
   return (
     <div className="p-4 sm:p-6 lg:p-8">
       <Card>
@@ -33,7 +22,7 @@ export default function LoansPage() {
             <Card key={loan.id} className="p-4">
               <div className="flex items-start gap-4">
                 <div className="p-2 bg-orange-500/10 rounded-full">
-                  <Landmark className="h-6 w-6 text-orange-500" />
+                  <loan.icon className="h-6 w-6 text-orange-500" />
                 </div>
                 <div className="flex-1">
                   <div className="flex justify-between items-center">

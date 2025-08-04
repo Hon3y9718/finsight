@@ -5,14 +5,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  Banknote,
   Landmark,
   PiggyBank,
   TrendingDown,
   TrendingUp,
-  Wallet,
 } from "lucide-react";
-import { transactions } from "@/lib/data";
+import { transactions, investments, loans } from "@/lib/data";
 
 export function StatCards() {
   const totalIncome = transactions
@@ -21,8 +19,8 @@ export function StatCards() {
   const totalExpenses = transactions
     .filter((t) => t.type === "expense")
     .reduce((acc, t) => acc + t.amount, 0);
-  const totalInvestments = 500; // Mock data
-  const totalLoans = 12500; // Mock data
+  const totalInvestments = investments.reduce((acc, i) => acc + i.amount, 0);
+  const totalLoans = loans.reduce((acc, l) => acc + l.currentBalance, 0);
 
   const stats = [
     {
