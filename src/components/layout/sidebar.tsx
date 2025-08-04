@@ -79,7 +79,7 @@ export default function AppSidebar() {
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton href="#" tooltip="Reports">
+            <SidebarMenuButton href="/reports" tooltip="Reports" isActive={isActive('/reports')}>
               <BarChart3 />
               <span>Reports</span>
             </SidebarMenuButton>

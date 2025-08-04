@@ -21,6 +21,8 @@ function getTitle(pathname: string) {
       return "Loans";
     case "/subscriptions":
       return "Subscriptions";
+    case "/reports":
+      return "Reports";
     default:
       return "Dashboard";
   }
