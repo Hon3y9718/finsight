@@ -1,3 +1,4 @@
+
 "use client";
 
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -23,6 +24,12 @@ function getTitle(pathname: string) {
       return "Subscriptions";
     case "/reports":
       return "Reports";
+    case "/profile":
+      return "Profile";
+    case "/billing":
+      return "Billing";
+    case "/settings":
+      return "Settings";
     default:
       return "Dashboard";
   }
