@@ -62,7 +62,7 @@ export function StatCards() {
               ${stat.amount.toLocaleString()}
             </div>
             <p className="text-xs text-muted-foreground">
-              +20.1% from last month
+              {/* +20.1% from last month */}
             </p>
           </CardContent>
         </Card>
