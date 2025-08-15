@@ -1,72 +1,71 @@
+"use client";
 
-"use client"
+import "./globals.css";
+import { Toaster } from "@/components/ui/toaster";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import AppSidebar from "@/components/layout/sidebar";
+import Header from "@/components/layout/header";
+import { ThemeProvider } from "@/components/theme-provider";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { auth } from "@/firebase";
+import { onAuthStateChanged } from "firebase/auth";
 
-import './globals.css';
-import { Toaster } from "@/components/ui/toaster"
-import { SidebarProvider } from '@/components/ui/sidebar';
-import AppSidebar from '@/components/layout/sidebar';
-import Header from '@/components/layout/header';
-import { usePathname } from 'next/navigation';
-import { ThemeProvider } from '@/components/theme-provider';
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<any>(null);
 
+  // ✅ Check auth state on first load
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (!currentUser && pathname !== "/login" && pathname !== "/register") {
+        router.replace("/login");
+      }
+      setUser(currentUser);
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, [pathname, router]);
 
-// export const metadata: Metadata = {
-//   title: 'FinSight',
-//   description: 'Your personal finance tracker.',
-// };
+  // 🚫 Prevent flash before auth is checked
+  if (loading) {
+    return (
+      <html lang="en">
+        <body>
+          <div className="flex items-center justify-center min-h-screen">
+            <p className="text-lg font-medium">Loading...</p>
+          </div>
+        </body>
+      </html>
+    );
+  }
 
-const AuthRoutes = ['/login', '/register', '/forgot-password'];
-
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+  const isAuthPage = pathname === "/login" || pathname === "/register";
 
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap" rel="stylesheet" />
-        <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;700&display=swap" rel="stylesheet" />
-      </head>
-      <body className="font-body antialiased">
-        <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-        >
-            <ConditionalLayout>
-                {children}
-            </ConditionalLayout>
-            <Toaster />
+    <html lang="en">
+      <body>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <Toaster />
+          {isAuthPage ? (
+            // 🔹 Login/Register layout (No sidebar, No header)
+            <main className="min-h-screen">{children}</main>
+          ) : (
+            // 🔹 Authenticated pages layout (With sidebar + header)
+            <SidebarProvider>
+              <div className="flex min-h-screen">
+                <AppSidebar />
+                <div className="flex flex-col flex-1">
+                  <Header />
+                  <main className="flex-1 p-4">{children}</main>
+                </div>
+              </div>
+            </SidebarProvider>
+          )}
         </ThemeProvider>
       </body>
     </html>
   );
-}
-
-function ConditionalLayout({ children }: { children: React.ReactNode }) {
-    const pathname = usePathname();
-    const isAuthRoute = AuthRoutes.includes(pathname);
-
-    if (isAuthRoute) {
-        return <>{children}</>;
-    }
-
-    return (
-        <SidebarProvider>
-          <div className="flex min-h-screen">
-            <AppSidebar />
-            <div className="flex-1 flex flex-col">
-              <Header />
-              <main>
-                {children}
-              </main>
-            </div>
-          </div>
-        </SidebarProvider>
-    )
 }

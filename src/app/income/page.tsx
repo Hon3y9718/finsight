@@ -1,4 +1,6 @@
+"use client";
 
+import React, { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -14,20 +16,47 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { transactions } from "@/lib/data";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
+import { db } from "@/firebase";
+import {
+  collection,
+  query,
+  where,
+  onSnapshot,
+  DocumentData,
+} from "firebase/firestore";
+
+interface Transaction {
+  id: string;
+  amount: number;
+  category: string;
+  date: string;
+  description?: string;
+  icon?: React.ComponentType<any>; // optional, if you want to map icons
+}
+
 export default function IncomePage() {
-    const incomeTransactions = transactions.filter(t => t.type === 'income');
+  const [incomeTransactions, setIncomeTransactions] = useState<Transaction[]>([]);
+
+  useEffect(() => {
+    const q = query(collection(db, "transactions"), where("type", "==", "income"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Transaction[];
+      setIncomeTransactions(data);
+    });
+    return () => unsubscribe();
+  }, []);
+
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>Income</CardTitle>
-          <CardDescription>
-            A list of all your income sources.
-          </CardDescription>
+          <CardDescription>A list of all your income sources.</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
@@ -44,13 +73,15 @@ export default function IncomePage() {
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <Avatar className="hidden h-9 w-9 sm:flex">
-                        <AvatarFallback className='bg-accent/20'>
-                          <transaction.icon className='h-5 w-5 text-accent-foreground' />
+                        <AvatarFallback className="bg-accent/20">
+                          {/* You can put icon here if you map categories to icons */}
                         </AvatarFallback>
                       </Avatar>
                       <div className="grid gap-0.5">
                         <p className="font-medium">{transaction.category}</p>
-                        <p className="text-xs text-muted-foreground">{transaction.description}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {transaction.description}
+                        </p>
                       </div>
                     </div>
                   </TableCell>

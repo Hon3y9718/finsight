@@ -14,9 +14,17 @@ import { Lightbulb, Loader2, ListChecks, Sparkles } from "lucide-react";
 import { getFinancialInsights } from "@/app/actions";
 import { useToast } from "@/hooks/use-toast";
 
+// Type for insights stored in state
 type Insights = {
-  summary: string | null;
-  tips: string[] | null;
+  summary: string;
+  tips: string[];
+};
+
+// Type for result returned from getFinancialInsights()
+type FinancialInsightsResult = {
+  summary?: string | null;
+  tips?: string[] | null;
+  error?: string;
 };
 
 export function AiInsights() {
@@ -26,15 +34,36 @@ export function AiInsights() {
 
   const handleGenerateInsights = () => {
     startTransition(async () => {
-      const result = await getFinancialInsights();
-      if (result.error) {
+      try {
+        // Cast the result to the expected type
+        const result = await getFinancialInsights() as {
+          summary?: string | null;
+          tips?: string[] | null;
+          error?: string;
+        };
+
+        if (result.error) {
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: result.error,
+          });
+          return;
+        }
+
+        // Safely assign defaults to avoid null/undefined
+        setInsights({
+          summary: result.summary || "No summary available",
+          tips: result.tips || [],
+        });
+
+      } catch (err) {
+        console.error(err);
         toast({
           variant: "destructive",
           title: "Error",
-          description: result.error,
+          description: "Something went wrong while generating insights.",
         });
-      } else {
-        setInsights({ summary: result.summary, tips: result.tips });
       }
     });
   };
@@ -44,12 +73,13 @@ export function AiInsights() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Sparkles className="text-primary" />
-          <span>AI Financial Insights</span>
+          AI Financial Insights
         </CardTitle>
         <CardDescription>
           Get personalized tips to improve your financial habits.
         </CardDescription>
       </CardHeader>
+
       <CardContent className="flex-grow">
         {insights ? (
           <div className="space-y-4">
@@ -66,7 +96,9 @@ export function AiInsights() {
                 Actionable Tips
               </h3>
               <ul className="space-y-2 list-disc pl-5 text-sm text-muted-foreground">
-                {insights.tips?.map((tip, index) => <li key={index}>{tip}</li>)}
+                {insights.tips.map((tip, index) => (
+                  <li key={index}>{tip}</li>
+                ))}
               </ul>
             </div>
           </div>
@@ -79,12 +111,9 @@ export function AiInsights() {
           </div>
         )}
       </CardContent>
+
       <CardFooter>
-        <Button
-          onClick={handleGenerateInsights}
-          disabled={isPending}
-          className="w-full"
-        >
+        <Button onClick={handleGenerateInsights} disabled={isPending} className="w-full">
           {isPending ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />

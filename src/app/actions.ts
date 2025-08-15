@@ -1,51 +1,58 @@
 "use server";
 
-import { db, auth } from "@/firebase";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { db } from "@/firebase";
+import { addDoc, collection, Timestamp } from "firebase/firestore";
 
-// Types (define if not already)
-export type Income = {
-  id: string;
-  amount: number;
-  category: string;
-  date: string;
-  type: "income";
-  icon: string;
-};
+async function addTransactionToCollection(
+  collectionName: string,
+  data: any,
+  uid: string,
+  type: string,
+  icon: string
+): Promise<{ success: boolean }> {
+  try {
+    console.log("Transaction Adding");
 
-export type Expense = {
-  id: string;
-  amount: number;
-  category: string;
-  date: string;
-  type: "expense";
-  icon: string;
-};
+    // Convert user-selected date string to Firestore Timestamp
+    const txDate = data.date ? new Date(data.date) : new Date();
+    const timestamp = Timestamp.fromDate(txDate);
 
-export type Investment = {
-  id: string;
-  amount: number;
-  category: string;
-  date: string;
-  type: "investment";
-  icon: string;
-};
+    await addDoc(collection(db, "transactions"), {
+      ...data,
+      uid,
+      type,
+      icon,
+      timestamp, // <-- use the selected date instead of serverTimestamp
+    });
 
-// ✅ Add Income
-export async function addIncome(data: Omit<Income, "id" | "type" | "icon">) {
-  const user = auth.currentUser;
-  if (!user) throw new Error("User not authenticated");
-
-  await addDoc(collection(db, "income"), {
-    ...data,
-    uid: user.uid,
-    type: "income",
-    icon: "ArrowUpCircle",
-    timestamp: serverTimestamp(),
-  });
-
-  return { success: true };
+    console.log("Transaction Added");
+    return { success: true };
+  } catch (error) {
+    console.error("Error adding to", collectionName, error);
+    return { success: false };
+  }
 }
+
+export async function addIncome(data: any, uid: string) {
+  return addTransactionToCollection("income", data, uid, "income", "ArrowUpCircle");
+}
+
+export async function addExpense(data: any, uid: string) {
+  return addTransactionToCollection("expenses", data, uid, "expense", "ArrowDownCircle");
+}
+
+export async function addInvestment(data: any, uid: string) {
+  return addTransactionToCollection("investments", data, uid, "investment", "TrendingUp");
+}
+
+export async function addLoan(data: any, uid: string) {
+  return addTransactionToCollection("loans", data, uid, "loan", "Banknote");
+}
+
+export async function addSubscription(data: any, uid: string) {
+  return addTransactionToCollection("subscriptions", data, uid, "subscription", "Repeat");
+}
+// Dummy insights function (no change)
 export async function getFinancialInsights() {
   return {
     insights: [
@@ -54,68 +61,4 @@ export async function getFinancialInsights() {
       "Try to save at least 20% of your income each month.",
     ],
   };
-}
-
-// ✅ Add Expense
-export async function addExpense(data: Omit<Expense, "id" | "type" | "icon">) {
-  const user = auth.currentUser;
-  if (!user) throw new Error("User not authenticated");
-
-  await addDoc(collection(db, "expenses"), {
-    ...data,
-    uid: user.uid,
-    type: "expense",
-    icon: "ArrowDownCircle",
-    timestamp: serverTimestamp(),
-  });
-
-  return { success: true };
-}
-
-// ✅ Add Investment
-export async function addInvestment(data: Omit<Investment, "id" | "type" | "icon">) {
-  const user = auth.currentUser;
-  if (!user) throw new Error("User not authenticated");
-
-  await addDoc(collection(db, "investments"), {
-    ...data,
-    uid: user.uid,
-    type: "investment",
-    icon: "TrendingUp",
-    timestamp: serverTimestamp(),
-  });
-
-  return { success: true };
-}
-
-// ✅ Add Loan
-export async function addLoan(data: any) {
-  const user = auth.currentUser;
-  if (!user) throw new Error("User not authenticated");
-
-  await addDoc(collection(db, "loans"), {
-    ...data,
-    uid: user.uid,
-    type: "loan",
-    icon: "Banknote",
-    timestamp: serverTimestamp(),
-  });
-
-  return { success: true };
-}
-
-// ✅ Add Subscription
-export async function addSubscription(data: any) {
-  const user = auth.currentUser;
-  if (!user) throw new Error("User not authenticated");
-
-  await addDoc(collection(db, "subscriptions"), {
-    ...data,
-    uid: user.uid,
-    type: "subscription",
-    icon: "Repeat",
-    timestamp: serverTimestamp(),
-  });
-
-  return { success: true };
 }

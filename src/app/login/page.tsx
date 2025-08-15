@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/firebase";
+import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
+import { auth, db } from "@/firebase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,11 +28,38 @@ export default function LoginPage() {
   const handleLogin = async () => {
     setError("");
     setLoading(true);
+
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      // 🔹 Step 1: Auth login
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // 🔹 Step 2: Firestore me lastLogin update
+      try {
+        await updateDoc(doc(db, "users", user.uid), {
+          lastLogin: serverTimestamp(),
+        });
+      } catch (firestoreError) {
+        console.warn("Firestore lastLogin update failed:", firestoreError);
+      }
+
+      // 🔹 Step 3: Redirect to dashboard
       router.push("/dashboard");
+
     } catch (err: any) {
-      setError("Invalid credentials or user does not exist.");
+      switch (err.code) {
+        case "auth/invalid-email":
+          setError("Invalid email address.");
+          break;
+        case "auth/user-not-found":
+          setError("User not found.");
+          break;
+        case "auth/wrong-password":
+          setError("Incorrect password.");
+          break;
+        default:
+          setError("Login failed. Try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -42,7 +70,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader>
           <CardTitle className="text-2xl">Login</CardTitle>
-          <CardDescription>Enter your email and password to continue</CardDescription>
+          <CardDescription>Access your account</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">

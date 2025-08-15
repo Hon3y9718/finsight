@@ -1,3 +1,6 @@
+
+"use client";
+
 import {
   Card,
   CardContent,
@@ -10,40 +13,106 @@ import {
   TrendingDown,
   TrendingUp,
 } from "lucide-react";
-import { transactions, investments, loans } from "@/lib/data";
+import { useEffect, useState } from "react";
+import { auth, db } from "@/firebase";
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+} from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
 
 export function StatCards() {
-  const totalIncome = transactions
-    .filter((t) => t.type === "income")
-    .reduce((acc, t) => acc + t.amount, 0);
-  const totalExpenses = transactions
-    .filter((t) => t.type === "expense")
-    .reduce((acc, t) => acc + t.amount, 0);
-  const totalInvestments = investments.reduce((acc, i) => acc + i.amount, 0);
-  const totalLoans = loans.reduce((acc, l) => acc + l.currentBalance, 0);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [income, setIncome] = useState(0);
+  const [expenses, setExpenses] = useState(0);
+  const [investments, setInvestments] = useState(0);
+  const [loans, setLoans] = useState(0);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        setUserId(user.uid);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const fetchData = async () => {
+      // Transactions
+      const transRef = query(
+        collection(db, "transactions"),
+        where("uid", "==", userId)
+      );
+      const transSnap = await getDocs(transRef);
+      let incomeTotal = 0;
+      let expenseTotal = 0;
+      transSnap.forEach((doc) => {
+        const data = doc.data();
+        if (data.type === "income") {
+          incomeTotal += Number(data.amount) || 0;
+        } else if (data.type === "expense") {
+          expenseTotal += Number(data.amount) || 0;
+        }
+      });
+      setIncome(incomeTotal);
+      setExpenses(expenseTotal);
+
+      // Investments
+      const investRef = query(
+        collection(db, "investments"),
+        where("uid", "==", userId)
+      );
+      const investSnap = await getDocs(investRef);
+      let investTotal = 0;
+      investSnap.forEach((doc) => {
+        investTotal += doc.data().amount;
+      });
+      setInvestments(investTotal);
+
+      // Loans
+      const loansRef = query(
+        collection(db, "loans"),
+        where("uid", "==", userId)
+      );
+      const loansSnap = await getDocs(loansRef);
+      let loanTotal = 0;
+      loansSnap.forEach((doc) => {
+        loanTotal += doc.data().currentBalance;
+      });
+      setLoans(loanTotal);
+    };
+
+    fetchData();
+  }, [userId]);
 
   const stats = [
     {
       title: "Total Income",
-      amount: totalIncome,
+      amount: income,
       icon: PiggyBank,
       color: "text-green-500",
     },
     {
       title: "Total Expenses",
-      amount: totalExpenses,
+      amount: expenses,
       icon: TrendingDown,
       color: "text-red-500",
     },
     {
       title: "Investments",
-      amount: totalInvestments,
+      amount: investments,
       icon: TrendingUp,
       color: "text-blue-500",
     },
     {
       title: "Loans",
-      amount: totalLoans,
+      amount: loans,
       icon: Landmark,
       color: "text-orange-500",
     },
@@ -52,18 +121,18 @@ export function StatCards() {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       {stats.map((stat) => (
-        <Card key={stat.title} className="hover:shadow-lg transition-shadow duration-300">
+        <Card
+          key={stat.title}
+          className="hover:shadow-lg transition-shadow duration-300"
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
             <stat.icon className={`h-5 w-5 ${stat.color}`} />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              ${stat.amount.toLocaleString()}
+            <div className="text-2xl font-bold truncate">
+              ${stat.amount.toLocaleString("en-US")}
             </div>
-            <p className="text-xs text-muted-foreground">
-              {/* +20.1% from last month */}
-            </p>
           </CardContent>
         </Card>
       ))}
