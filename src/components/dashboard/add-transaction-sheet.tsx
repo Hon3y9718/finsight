@@ -32,7 +32,9 @@ import {
   FormMessage,
 } from "../ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { useTransition } from "react";
+import { useTransition, useState, useEffect } from "react";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+
 import { Loader2 } from "lucide-react";
 
 import {
@@ -43,7 +45,7 @@ import {
   addExpense,
 } from "@/app/actions";
 
-import { auth } from "@/firebase"; // Firebase auth import
+import { auth, db } from "@/firebase"; // Firebase auth import
 
 // Schemas
 const expenseIncomeSchema = z.object({
@@ -66,6 +68,8 @@ const loanSchema = z.object({
   currentBalance: z.coerce.number().positive("Current balance must be positive"),
   interestRate: z.coerce.number().min(0, "Interest rate cannot be negative"),
   paymentDate: z.string().min(1, "Payment date is required"),
+  tenure: z.coerce.number().positive("Tenure must be greater than 0"),
+  emi: z.number().optional(),
 });
 
 const subscriptionSchema = z.object({
@@ -337,6 +341,8 @@ function InvestmentForm() {
 function LoanForm() {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
+  const [emi, setEmi] = useState<number | null>(null);
+  const [loanId, setLoanId] = useState<string | null>(null);
 
   const form = useForm<z.infer<typeof loanSchema>>({
     resolver: zodResolver(loanSchema),
@@ -346,9 +352,32 @@ function LoanForm() {
       currentBalance: 0,
       interestRate: 0,
       paymentDate: "",
+      tenure: 0,
+      emi: 0,
     },
   });
 
+  // EMI Calculation
+  const calculateEmi = (principal: number, rate: number, tenure: number) => {
+    const r = rate / 100 / 12; // monthly interest
+    const n = tenure;
+    if (r === 0) return principal / n;
+    const emi = (principal * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+    return emi;
+  };
+
+  // Watch form values & calculate EMI
+  const watchFields = form.watch(["initialAmount", "interestRate", "tenure"]);
+  useEffect(() => {
+    const [principal, rate, tenure] = watchFields;
+    if (principal > 0 && tenure > 0) {
+      const calculated = calculateEmi(principal, rate, tenure);
+      setEmi(calculated);
+      form.setValue("emi", calculated);
+    }
+  }, [watchFields, form]);
+
+  // Submit Loan
   const onSubmit = (values: z.infer<typeof loanSchema>) => {
     startTransition(async () => {
       const uid = auth.currentUser?.uid;
@@ -357,9 +386,10 @@ function LoanForm() {
         return;
       }
 
-      const result = await addLoan(values, uid);
-      if (result) {
+      const result = await addLoan(values, uid); // <- tumhare actions ka function
+      if (result?.id) {
         toast({ title: "Loan added successfully" });
+        setLoanId(result.id); // loanId store karo for EMI payments
         form.reset();
       } else {
         toast({ variant: "destructive", title: "Error adding loan" });
@@ -367,83 +397,136 @@ function LoanForm() {
     });
   };
 
-  return (
+  // Pay EMI
+  const handlePayEmi = async () => {
+    if (!loanId || !emi) {
+      toast({ variant: "destructive", title: "Loan not found or EMI missing" });
+      return;
+    }
+    try {
+      const uid = auth.currentUser?.uid;
+      await addDoc(collection(db, `loans/${loanId}/emiPayments`), {
+        userId: uid,
+        amount: emi,
+        paidAt: serverTimestamp(),
+        status: "Paid",
+      });
+      toast({ title: "✅ EMI paid successfully" });
+    } catch (err) {
+      console.error(err);
+      toast({ variant: "destructive", title: "Error while paying EMI" });
+    }
+  };
+
+ return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
-        <FormField
-          control={form.control}
-          name="lender"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Lender Name</FormLabel>
-              <FormControl>
-                <Input placeholder="e.g., Community Bank" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+      {/* 👇 Scrollable wrapper */}
+      <div className="max-h-[70vh] overflow-y-auto pr-2">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+          <FormField
+            control={form.control}
+            name="lender"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Lender Name</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g., Community Bank" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="initialAmount"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Initial Amount</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="$25,000" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="currentBalance"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Current Balance</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="$12,500" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="interestRate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Interest Rate (%)</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="5.5" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="paymentDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Next Payment Date</FormLabel>
+                  <FormControl>
+                    <Input type="date" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <FormField
+            control={form.control}
+            name="tenure"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Tenure (in months)</FormLabel>
+                <FormControl>
+                  <Input type="number" placeholder="e.g., 24" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {emi && (
+            <div className="p-3 border rounded-lg bg-muted">
+              <p className="text-sm">Your EMI will be:</p>
+              <p className="text-lg font-semibold">₹{emi.toFixed(2)}</p>
+              {loanId && (
+                <Button type="button" className="mt-2" onClick={handlePayEmi}>
+                  Pay EMI
+                </Button>
+              )}
+            </div>
           )}
-        />
-        <div className="grid grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="initialAmount"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Initial Amount</FormLabel>
-                <FormControl>
-                  <Input type="number" placeholder="$25,000" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="currentBalance"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Current Balance</FormLabel>
-                <FormControl>
-                  <Input type="number" placeholder="$12,500" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="interestRate"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Interest Rate (%)</FormLabel>
-                <FormControl>
-                  <Input type="number" placeholder="5.5" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="paymentDate"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Next Payment Date</FormLabel>
-                <FormControl>
-                  <Input type="date" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        <Button type="submit" className="w-full" disabled={isPending}>
-          {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Add Loan
-        </Button>
-      </form>
+
+          <Button type="submit" className="w-full" disabled={isPending}>
+            {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Add Loan
+          </Button>
+        </form>
+      </div>
     </Form>
   );
 }

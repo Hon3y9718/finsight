@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/firebase";
-import { addDoc, collection, Timestamp } from "firebase/firestore";
+import { addDoc, doc, arrayUnion, updateDoc, collection,   Timestamp, serverTimestamp } from "firebase/firestore";
 
 async function addTransactionToCollection(
   collectionName: string,
@@ -22,7 +22,8 @@ async function addTransactionToCollection(
       uid,
       type,
       icon,
-      timestamp, // <-- use the selected date instead of serverTimestamp
+      timestamp,
+      createdAt: serverTimestamp(),
     });
 
     console.log("Transaction Added");
@@ -45,9 +46,51 @@ export async function addInvestment(data: any, uid: string) {
   return addTransactionToCollection("investments", data, uid, "investment", "TrendingUp");
 }
 
-export async function addLoan(data: any, uid: string) {
-  return addTransactionToCollection("loans", data, uid, "loan", "Banknote");
+// 🔹 Loan ke liye alag collection
+export async function addLoan(data: any, uid: string): Promise<{ id: string } | null> {
+  try {
+    console.log("Adding Loan...");
+
+    const txDate = data.paymentDate ? new Date(data.paymentDate) : new Date();
+    const timestamp = Timestamp.fromDate(txDate);
+
+    const docRef = await addDoc(collection(db, "loans"), {
+      lender: data.lender,
+      initialAmount: Number(data.initialAmount),
+      currentBalance: Number(data.currentBalance),
+      interestRate: Number(data.interestRate),
+      paymentDate: data.paymentDate,
+      uid,
+      type: "loan",
+      icon: "🏦",
+      timestamp,
+      createdAt: serverTimestamp(),
+      emiHistory: [],
+    });
+
+    console.log("Loan Added ✅", docRef.id);
+
+    // 🔹 return doc id
+    return { id: docRef.id };
+  } catch (error) {
+    console.error("Error adding loan:", error);
+    return null;
+  }
 }
+
+export async function payEmi(loanId: string, emiAmount: number) {
+  const loanRef = doc(db, "loans", loanId);
+
+  await updateDoc(loanRef, {
+    currentBalance: (Number(emiAmount) * -1), // deduct from balance
+    emiHistory: arrayUnion({
+      amount: emiAmount,
+      date: new Date().toISOString(),
+      status: "paid",
+    }),
+  });
+}
+
 
 export async function addSubscription(data: any, uid: string) {
   return addTransactionToCollection("subscriptions", data, uid, "subscription", "Repeat");
