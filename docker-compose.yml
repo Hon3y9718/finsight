@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: fingisht
+    container_name: finsight-web
     ports:
       - "3091:3000"
     environment:
