@@ -1,4 +1,3 @@
-
 "use client";
 
 import {
@@ -11,7 +10,7 @@ import {
   Landmark,
   PiggyBank,
   TrendingDown,
-  TrendingUp,
+  Wallet,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { auth, db } from "@/firebase";
@@ -27,7 +26,6 @@ export function StatCards() {
   const [userId, setUserId] = useState<string | null>(null);
   const [income, setIncome] = useState(0);
   const [expenses, setExpenses] = useState(0);
-  const [investments, setInvestments] = useState(0);
   const [loans, setLoans] = useState(0);
 
   useEffect(() => {
@@ -36,7 +34,6 @@ export function StatCards() {
         setUserId(user.uid);
       }
     });
-
     return () => unsubscribe();
   }, []);
 
@@ -44,7 +41,7 @@ export function StatCards() {
     if (!userId) return;
 
     const fetchData = async () => {
-      // Transactions
+      // Transactions (Income + Expenses)
       const transRef = query(
         collection(db, "transactions"),
         where("uid", "==", userId)
@@ -52,6 +49,7 @@ export function StatCards() {
       const transSnap = await getDocs(transRef);
       let incomeTotal = 0;
       let expenseTotal = 0;
+
       transSnap.forEach((doc) => {
         const data = doc.data();
         if (data.type === "income") {
@@ -60,22 +58,11 @@ export function StatCards() {
           expenseTotal += Number(data.amount) || 0;
         }
       });
+
       setIncome(incomeTotal);
       setExpenses(expenseTotal);
 
-      // Investments
-      const investRef = query(
-        collection(db, "investments"),
-        where("uid", "==", userId)
-      );
-      const investSnap = await getDocs(investRef);
-      let investTotal = 0;
-      investSnap.forEach((doc) => {
-        investTotal += doc.data().amount;
-      });
-      setInvestments(investTotal);
-
-      // Loans
+      // Loans (Current Balance only)
       const loansRef = query(
         collection(db, "loans"),
         where("uid", "==", userId)
@@ -83,7 +70,7 @@ export function StatCards() {
       const loansSnap = await getDocs(loansRef);
       let loanTotal = 0;
       loansSnap.forEach((doc) => {
-        loanTotal += doc.data().currentBalance;
+        loanTotal += Number(doc.data().currentBalance) || 0;
       });
       setLoans(loanTotal);
     };
@@ -91,7 +78,16 @@ export function StatCards() {
     fetchData();
   }, [userId]);
 
+  // ✅ Correct Current Balance Logic
+  const currentBalance = (income - expenses) + loans;
+
   const stats = [
+    {
+      title: "Current Balance",
+      amount: currentBalance,
+      icon: Wallet,
+      color: "text-blue-500",
+    },
     {
       title: "Total Income",
       amount: income,
@@ -103,12 +99,6 @@ export function StatCards() {
       amount: expenses,
       icon: TrendingDown,
       color: "text-red-500",
-    },
-    {
-      title: "Investments",
-      amount: investments,
-      icon: TrendingUp,
-      color: "text-blue-500",
     },
     {
       title: "Loans",
@@ -131,7 +121,7 @@ export function StatCards() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold truncate">
-              ${stat.amount.toLocaleString("en-US")}
+              ₹{stat.amount.toLocaleString("en-US")}
             </div>
           </CardContent>
         </Card>

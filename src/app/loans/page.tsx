@@ -70,10 +70,18 @@ export default function LoansPage() {
       where("loanId", "==", selectedLoan.id)
     );
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as LoanHistory[];
+      const data = snapshot.docs.map((doc) => {
+        const d = doc.data();
+        return {
+          id: doc.id,
+          amount: d.amount,
+          status: d.status,
+          // Firestore Timestamp → Date string
+          date: d.date?.toDate
+            ? d.date.toDate().toLocaleDateString()
+            : new Date(d.date).toLocaleDateString(),
+        } as LoanHistory;
+      });
       setHistory(data);
     });
 
@@ -167,11 +175,11 @@ export default function LoansPage() {
                 {/* Loan Info */}
                 <div className="flex justify-between">
                   <p className="font-medium">Initial Amount:</p>
-                  <p>${selectedLoan.initialAmount.toLocaleString()}</p>
+                  <p>₹{selectedLoan.initialAmount.toLocaleString()}</p>
                 </div>
                 <div className="flex justify-between">
                   <p className="font-medium">Current Balance:</p>
-                  <p>${selectedLoan.currentBalance.toLocaleString()}</p>
+                  <p>₹{selectedLoan.currentBalance.toLocaleString()}</p>
                 </div>
                 <div className="flex justify-between">
                   <p className="font-medium">Interest Rate:</p>
@@ -201,7 +209,7 @@ export default function LoansPage() {
                           className="flex justify-between p-2 border rounded-lg"
                         >
                           <span>{h.date}</span>
-                          <span>${h.amount}</span>
+                          <span>₹{h.amount}</span>
                           <span
                             className={`px-2 py-1 rounded-full text-xs ${getStatusColor(
                               h.status
@@ -264,7 +272,7 @@ export default function LoansPage() {
           {emi !== null && (
             <div className="mt-4 p-4 border rounded-lg bg-muted">
               <p className="text-sm text-muted-foreground">Your Monthly EMI:</p>
-              <p className="text-lg font-semibold">${emi.toFixed(2)}</p>
+              <p className="text-lg font-semibold">₹{emi.toFixed(2)}</p>
             </div>
           )}
         </CardContent>

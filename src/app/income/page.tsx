@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/table";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
-import { db } from "@/firebase";
+import { db,auth } from "@/firebase";
 import {
   collection,
   query,
@@ -33,7 +33,7 @@ interface Transaction {
   category: string;
   date: string;
   description?: string;
-  icon?: React.ComponentType<any>; // optional, if you want to map icons
+  icon?: React.ComponentType<any>;
 }
 
 export default function IncomePage() {
@@ -74,7 +74,7 @@ export default function IncomePage() {
                     <div className="flex items-center gap-3">
                       <Avatar className="hidden h-9 w-9 sm:flex">
                         <AvatarFallback className="bg-accent/20">
-                          {/* You can put icon here if you map categories to icons */}
+                          {/* Optional: icon mapping here */}
                         </AvatarFallback>
                       </Avatar>
                       <div className="grid gap-0.5">
@@ -86,7 +86,7 @@ export default function IncomePage() {
                     </div>
                   </TableCell>
                   <TableCell className="text-right font-medium text-green-500">
-                    +${transaction.amount.toFixed(2)}
+                    +₹{transaction.amount.toFixed(2)}
                   </TableCell>
                   <TableCell>{transaction.date}</TableCell>
                 </TableRow>

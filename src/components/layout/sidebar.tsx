@@ -69,10 +69,10 @@ export default function AppSidebar() {
           </SidebarMenuItem>
           <SidebarMenuItem>
             <Link href="/investments">
-              <SidebarMenuButton tooltip="Investments" isActive={isActive('/investments')}>
-                <TrendingUp />
-                <span>Investments</span>
-              </SidebarMenuButton>
+              {/* <SidebarMenuButton tooltip="Investments" isActive={isActive('/investments')}> */}
+                {/* <TrendingUp /> */}
+                {/* <span>Investments</span> */}
+              {/* </SidebarMenuButton> */}
             </Link>
           </SidebarMenuItem>
           <SidebarMenuItem>
@@ -85,18 +85,18 @@ export default function AppSidebar() {
           </SidebarMenuItem>
           <SidebarMenuItem>
             <Link href="/subscriptions">
-              <SidebarMenuButton tooltip="Subscriptions" isActive={isActive('/subscriptions')}>
-                <Repeat />
-                <span>Subscriptions</span>
-              </SidebarMenuButton>
+              {/* <SidebarMenuButton tooltip="Subscriptions" isActive={isActive('/subscriptions')}> */}
+                {/* <Repeat /> */}
+                {/* <span>Subscriptions</span> */}
+              {/* </SidebarMenuButton> */}
             </Link>
           </SidebarMenuItem>
           <SidebarMenuItem>
             <Link href="/reports">
-              <SidebarMenuButton tooltip="Reports" isActive={isActive('/reports')}>
-                <BarChart3 />
-                <span>Reports</span>
-              </SidebarMenuButton>
+              {/* <SidebarMenuButton tooltip="Reports" isActive={isActive('/reports')}> */}
+                {/* <BarChart3 /> */}
+                {/* <span>Reports</span> */}
+              {/* </SidebarMenuButton> */}
             </Link>
           </SidebarMenuItem>
         </SidebarMenu>

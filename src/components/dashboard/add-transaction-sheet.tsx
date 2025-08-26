@@ -97,7 +97,9 @@ export function AddTransactionSheet({ children }: { children: React.ReactNode })
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="expense">Expense</TabsTrigger>
             <TabsTrigger value="income">Income</TabsTrigger>
-            <TabsTrigger value="other">Other</TabsTrigger>
+            {/* <TabsTrigger value="other">Other</TabsTrigger> */}
+                        <TabsTrigger value="loan">Loan</TabsTrigger>
+
           </TabsList>
 
           <TabsContent value="expense">
@@ -107,24 +109,24 @@ export function AddTransactionSheet({ children }: { children: React.ReactNode })
             <ExpenseIncomeForm type="Income" />
           </TabsContent>
           <TabsContent value="other">
-            <Tabs defaultValue="investment" className="w-full">
+            {/* <Tabs defaultValue="investment" className="w-full"> */}
               <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="investment">Investment</TabsTrigger>
+                {/* <TabsTrigger value="investment">Investment</TabsTrigger> */}
                 <TabsTrigger value="loan">Loan</TabsTrigger>
-                <TabsTrigger value="subscription">Subscription</TabsTrigger>
+                {/* <TabsTrigger value="subscription">Subscription</TabsTrigger> */}
               </TabsList>
 
-              <TabsContent value="investment">
-                <InvestmentForm />
+              {/* <TabsContent value="investment"> */}
+                {/* <InvestmentForm /> */}
               </TabsContent>
               <TabsContent value="loan">
                 <LoanForm />
               </TabsContent>
-              <TabsContent value="subscription">
-                <SubscriptionForm />
-              </TabsContent>
-            </Tabs>
-          </TabsContent>
+              {/* <TabsContent value="subscription"> */}
+                {/* <SubscriptionForm /> */}
+              {/* </TabsContent> */}
+            {/* </Tabs> */}
+          {/* </TabsContent> */}
         </Tabs>
       </SheetContent>
     </Sheet>
@@ -180,7 +182,7 @@ function ExpenseIncomeForm({ type }: { type: "Expense" | "Income" }) {
             <FormItem>
               <FormLabel>Amount</FormLabel>
               <FormControl>
-                <Input type="number" placeholder="$0.00" {...field} />
+                <Input type="number" placeholder="₹0.00" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -445,7 +447,7 @@ function LoanForm() {
                 <FormItem>
                   <FormLabel>Initial Amount</FormLabel>
                   <FormControl>
-                    <Input type="number" placeholder="$25,000" {...field} />
+                    <Input type="number" placeholder="₹25,000" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -458,7 +460,7 @@ function LoanForm() {
                 <FormItem>
                   <FormLabel>Current Balance</FormLabel>
                   <FormControl>
-                    <Input type="number" placeholder="$12,500" {...field} />
+                    <Input type="number" placeholder="₹12,500" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -556,7 +558,8 @@ function SubscriptionForm() {
       } else {
         toast({ variant: "destructive", title: "Error adding subscription" });
       }
-    });
+    }
+  );
   };
 
   return (
@@ -583,7 +586,7 @@ function SubscriptionForm() {
               <FormItem>
                 <FormLabel>Amount</FormLabel>
                 <FormControl>
-                  <Input type="number" placeholder="$15.00" {...field} />
+                  <Input type="number" placeholder="₹15.00" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

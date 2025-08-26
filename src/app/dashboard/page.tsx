@@ -4,17 +4,25 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { auth, db } from "@/firebase";
-import { doc, getDoc, collection, onSnapshot, query, where, updateDoc } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  collection,
+  onSnapshot,
+  query,
+  where,
+  updateDoc,
+} from "firebase/firestore";
 
 import { StatCards } from "@/components/dashboard/stat-cards";
-import { OverviewChart } from "@/components/dashboard/overview-chart";
 import { RecentTransactions } from "@/components/dashboard/recent-transactions";
-import { AiInsights } from "@/components/dashboard/ai-insights";
 
 interface Loan {
   id: string;
   lender: string;
   paymentDate: string;
+  amount?: number;
+  emiHistory?: { amount: number; paidAt: Date; status: string }[];
   isPaid?: boolean;
 }
 
@@ -24,7 +32,6 @@ export default function DashboardPage() {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  // ✅ Popup ke liye loan
   const [overdueLoan, setOverdueLoan] = useState<Loan | null>(null);
 
   useEffect(() => {
@@ -36,15 +43,18 @@ export default function DashboardPage() {
             localStorage.setItem("activeUser", currentUser.uid);
           }
 
-          // Firestore user profile fetch
+          // Fetch user profile
           const docRef = doc(db, "users", currentUser.uid);
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
             setProfile(docSnap.data());
           }
 
-          // ✅ Loans fetch + overdue check
-          const q = query(collection(db, "loans"), where("uid", "==", currentUser.uid));
+          // Fetch loans & check overdue
+          const q = query(
+            collection(db, "loans"),
+            where("uid", "==", currentUser.uid)
+          );
           const unsubLoans = onSnapshot(q, (snapshot) => {
             const loans = snapshot.docs.map((d) => ({
               id: d.id,
@@ -81,13 +91,25 @@ export default function DashboardPage() {
     return () => unsubscribe();
   }, [router]);
 
-  // ✅ Loan Paid handler
+  // ✅ Mark loan as paid + update history safely
   const handleMarkPaid = async () => {
     if (overdueLoan && user) {
       try {
         const loanRef = doc(db, "loans", overdueLoan.id);
-        await updateDoc(loanRef, { isPaid: true });
-        setOverdueLoan(null); // popup close
+
+        await updateDoc(loanRef, {
+          isPaid: true,
+          emiHistory: [
+            ...(overdueLoan.emiHistory || []),
+            {
+              amount: overdueLoan.amount || 0,
+              paidAt: new Date(),
+              status: "paid",
+            },
+          ],
+        });
+
+        setOverdueLoan(null); // close popup
         alert("✅ Loan marked as Paid!");
       } catch (err) {
         console.error("Error updating loan:", err);
@@ -107,8 +129,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* 🚨 Popup */}
-      {/* 🚨 Styled Popup */}
+      {/* 🚨 Overdue Loan Popup */}
       {overdueLoan && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50">
           <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-6 w-[90%] sm:w-96 animate-fadeIn">
@@ -116,7 +137,10 @@ export default function DashboardPage() {
               Loan Payment Reminder
             </h2>
             <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">
-              Your loan from <span className="font-medium text-red-600">{overdueLoan.lender}</span>
+              Your loan from{" "}
+              <span className="font-medium text-red-600">
+                {overdueLoan.lender}
+              </span>{" "}
               was due <b>yesterday</b>. Please confirm the status below.
             </p>
 
@@ -137,40 +161,14 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
-      {overdueLoan && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-          <div className="p-6 rounded-xl shadow-lg w-96 text-center bg-white">
-            <p className="mb-4 font-medium text-red-700">
-              Loan from <b>{overdueLoan.lender}</b> was due yesterday.
-              Mark as Paid?
-            </p>
-            <div className="flex gap-4 justify-center">
-              <button
-                className="px-4 py-2 bg-green-600 text-white rounded-lg"
-                onClick={handleMarkPaid}
-              >
-                ✅ Paid
-              </button>
-              <button
-                className="px-4 py-2 bg-gray-600 text-white rounded-lg"
-                onClick={() => setOverdueLoan(null)}
-              >
-                ❌ Not Paid
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       <StatCards />
+
       <div className="grid gap-6 lg:grid-cols-5">
-        <div className="lg:col-span-3">
-          <OverviewChart />
-        </div>
-        <div className="lg:col-span-2">
-          <AiInsights />
-        </div>
+        <div className="lg:col-span-3">{/* <OverviewChart /> */}</div>
+        <div className="lg:col-span-2">{/* <AiInsights /> */}</div>
       </div>
+
       <RecentTransactions />
     </div>
   );
