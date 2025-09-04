@@ -1,4 +1,3 @@
-
 "use client";
 
 import {
@@ -11,7 +10,7 @@ import {
   SidebarFooter,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
-import { FinSightLogo } from "@/components/icons";
+import { TechiciousLogo } from "@/components/icons";
 import {
   LayoutDashboard,
   ArrowRightLeft,
@@ -31,82 +30,81 @@ export default function AppSidebar() {
   const isActive = (path: string) => pathname === path;
 
   return (
-    <Sidebar
-      className="border-r"
-      collapsible="icon"
-      variant="sidebar"
-    >
+    <Sidebar className="border-r" collapsible="icon" variant="sidebar">
       <SidebarContent>
-        <SidebarHeader className="h-16 justify-center">
-          <FinSightLogo className="size-8" />
-          <span className="text-xl font-semibold text-primary">FinSight</span>
+        <SidebarHeader className="flex items-center gap-2 h-16 px-8">
+          <TechiciousLogo className="text-3xl" />
         </SidebarHeader>
+
+
 
         <SidebarMenu className="flex-1 px-4">
           <SidebarMenuItem>
             <Link href="/">
-              <SidebarMenuButton tooltip="Dashboard" isActive={isActive('/')}>
+              <SidebarMenuButton tooltip="Dashboard" isActive={isActive("/")}>
                 <LayoutDashboard />
                 <span>Dashboard</span>
               </SidebarMenuButton>
             </Link>
           </SidebarMenuItem>
+
           <SidebarMenuItem>
             <Link href="/transactions">
-              <SidebarMenuButton tooltip="Transactions" isActive={isActive('/transactions')}>
+              <SidebarMenuButton
+                tooltip="Transactions"
+                isActive={isActive("/transactions")}
+              >
                 <ArrowRightLeft />
                 <span>Transactions</span>
               </SidebarMenuButton>
             </Link>
           </SidebarMenuItem>
+
           <SidebarMenuItem>
             <Link href="/income">
-              <SidebarMenuButton tooltip="Income" isActive={isActive('/income')}>
-                <Wallet/>
+              <SidebarMenuButton
+                tooltip="Income"
+                isActive={isActive("/income")}
+              >
+                <Wallet />
                 <span>Income</span>
               </SidebarMenuButton>
             </Link>
           </SidebarMenuItem>
+
           <SidebarMenuItem>
             <Link href="/investments">
-              {/* <SidebarMenuButton tooltip="Investments" isActive={isActive('/investments')}> */}
-                {/* <TrendingUp /> */}
-                {/* <span>Investments</span> */}
-              {/* </SidebarMenuButton> */}
+              {/* Future investments */}
             </Link>
           </SidebarMenuItem>
+
           <SidebarMenuItem>
             <Link href="/loans">
-              <SidebarMenuButton tooltip="Loans" isActive={isActive('/loans')}>
+              <SidebarMenuButton tooltip="Loans" isActive={isActive("/loans")}>
                 <Landmark />
                 <span>Loans</span>
               </SidebarMenuButton>
             </Link>
           </SidebarMenuItem>
+
           <SidebarMenuItem>
             <Link href="/subscriptions">
-              {/* <SidebarMenuButton tooltip="Subscriptions" isActive={isActive('/subscriptions')}> */}
-                {/* <Repeat /> */}
-                {/* <span>Subscriptions</span> */}
-              {/* </SidebarMenuButton> */}
+              {/* Future subscriptions */}
             </Link>
           </SidebarMenuItem>
+
           <SidebarMenuItem>
             <Link href="/reports">
-              {/* <SidebarMenuButton tooltip="Reports" isActive={isActive('/reports')}> */}
-                {/* <BarChart3 /> */}
-                {/* <span>Reports</span> */}
-              {/* </SidebarMenuButton> */}
+              {/* Future reports */}
             </Link>
           </SidebarMenuItem>
         </SidebarMenu>
-        
-        <SidebarSeparator />
-        
-        <SidebarFooter className="p-4">
-            <UserNav />
-        </SidebarFooter>
 
+        <SidebarSeparator />
+
+        <SidebarFooter className="p-4">
+          <UserNav />
+        </SidebarFooter>
       </SidebarContent>
     </Sidebar>
   );

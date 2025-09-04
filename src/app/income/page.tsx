@@ -52,7 +52,8 @@ export default function IncomePage() {
   }, []);
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6">
+    <div className="w-screen p-4 sm:p-6 lg:p- space-y-6 max-w-6xl">
+
       <Card>
         <CardHeader>
           <CardTitle>Income</CardTitle>

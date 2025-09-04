@@ -129,7 +129,7 @@ export default function TransactionsPage() {
   }, [fromDate, toDate]);
 
   return (
-    <Card className="p-4">
+    <Card className="w-screen p-4 sm:p-6 lg:p- space-y-6 max-w-6xl">
       <CardHeader>
         <CardTitle>All Transactions</CardTitle>
         <CardDescription>
@@ -166,7 +166,8 @@ export default function TransactionsPage() {
               <TableHead>Category</TableHead>
               <TableHead>Type</TableHead>
               <TableHead className="text-right">Amount</TableHead>
-              <TableHead>Date</TableHead>
+              
+              <TableHead >Date</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -212,10 +213,10 @@ export default function TransactionsPage() {
                   </TableCell>
                   <TableCell
                     className={`text-right font-medium ${
-                      t.type === "income" ? "text-green-500" : "text-red-500"
+                      t.type === "income" ? "text-green-500" : "text-yellow-500"
                     }`}
                   >
-                    {t.type === "income" ? "+" : "-"}$
+                    {t.type === "income" ? "+" : ""}$
                     {Number(t.amount).toFixed(2)}
                   </TableCell>
                   <TableCell>

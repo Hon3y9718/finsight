@@ -15,10 +15,12 @@ import { Label } from "@/components/ui/label";
 import { auth, db } from "@/firebase";
 
 import { doc, getDoc, updateDoc } from "firebase/firestore";
+import FileUploadWrapper from "@/components/FileUploadWrapper";
 
 export default function ProfilePage() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
+  const [photoURL, setPhotoURL] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Fetch user data
@@ -26,15 +28,16 @@ export default function ProfilePage() {
     const fetchUserData = async () => {
       const user = auth.currentUser;
       if (user) {
-       setEmail(user.email!);
+        setEmail(user.email!);
 
-
-        // Fetch name from Firestore
+        // Fetch user doc from Firestore
         const userDocRef = doc(db, "users", user.uid);
         const userSnap = await getDoc(userDocRef);
 
         if (userSnap.exists()) {
-          setFullName(userSnap.data().firstName + " " + userSnap.data().lastName);
+          const data = userSnap.data();
+          setFullName((data.firstName || "") + " " + (data.lastName || ""));
+          setPhotoURL(data.photoURL || null);
         }
       }
       setLoading(false);
@@ -43,7 +46,7 @@ export default function ProfilePage() {
     fetchUserData();
   }, []);
 
-  // Update profile
+  // Update profile (name only)
   const handleUpdateProfile = async () => {
     const user = auth.currentUser;
     if (!user) return;
@@ -60,6 +63,19 @@ export default function ProfilePage() {
     alert("Profile updated successfully!");
   };
 
+  // Handle photo upload and save in Firestore
+  const handlePhotoUpload = async (url: string) => {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    await updateDoc(doc(db, "users", user.uid), {
+      photoURL: url,
+    });
+
+    setPhotoURL(url);
+    alert("Profile photo updated!");
+  };
+
   if (loading) return <p className="p-4">Loading...</p>;
 
   return (
@@ -68,17 +84,24 @@ export default function ProfilePage() {
         <CardHeader>
           <CardTitle>Profile</CardTitle>
           <CardDescription>
-            This is your public display name and email address.
+            This is your public display name, email address, and profile photo.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex items-center gap-4">
             <Avatar className="h-20 w-20">
-              <AvatarImage src="https://placehold.co/80x80" alt="@user" />
+              <AvatarImage
+                src={photoURL || "https://placehold.co/80x80"}
+                alt="@user"
+              />
               <AvatarFallback>{fullName.charAt(0) || "U"}</AvatarFallback>
             </Avatar>
-            <Button variant="outline">Change Photo</Button>
+
+            <FileUploadWrapper onUploaded={handlePhotoUpload}>
+              <Button variant="outline">Change Photo</Button>
+            </FileUploadWrapper>
           </div>
+
           <div className="grid md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="name">Full Name</Label>

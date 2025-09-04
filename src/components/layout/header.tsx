@@ -5,7 +5,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Plus, Upload } from "lucide-react";
 import { AddTransactionSheet } from "../dashboard/add-transaction-sheet";
-import { CsvImportDialog } from "../dashboard/csv-import-dialog";
+// import { CsvImportDialog } from "../dashboard/csv-import-dialog";
 import { usePathname } from "next/navigation";
 
 function getTitle(pathname: string) {
@@ -46,12 +46,12 @@ export default function Header() {
       </div>
       <h1 className="text-lg font-semibold md:text-2xl">{title}</h1>
       <div className="ml-auto flex items-center gap-2">
-        <CsvImportDialog>
+        {/* <CsvImportDialog>
           <Button variant="outline" size="sm">
             <Upload className="mr-2 h-4 w-4" />
             Import CSV
           </Button>
-        </CsvImportDialog>
+        </CsvImportDialog> */}
         <AddTransactionSheet>
           <Button size="sm">
             <Plus className="mr-2 h-4 w-4" />

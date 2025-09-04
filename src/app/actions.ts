@@ -12,19 +12,12 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 
-// 🔹 Transactions Helper
-async function addTransactionToCollection(
-  collectionName: string,
-  data: any,
-  uid: string,
-  type: string,
-  icon: string
-): Promise<{ success: boolean }> {
+// 🔹 General helper to add transactions only to "transactions" collection
+async function addTransaction(data: any, uid: string, type: string, icon: string) {
   try {
     const txDate = data.date ? new Date(data.date) : new Date();
     const timestamp = Timestamp.fromDate(txDate);
 
-    // ✅ Make sure amount is a number
     const transactionData = {
       ...data,
       amount: Number(data.amount) || 0,
@@ -35,83 +28,58 @@ async function addTransactionToCollection(
       createdAt: serverTimestamp(),
     };
 
-    await addDoc(collection(db, collectionName), transactionData);
+    // write only to general transactions collection
+    await addDoc(collection(db, "transactions"), transactionData);
 
     return { success: true };
   } catch (error) {
-    console.error("Error adding to", collectionName, error);
+    console.error("Error adding transaction:", error);
     return { success: false };
   }
 }
 
 // 🔹 Income
 export async function addIncome(data: any, uid: string) {
-  return addTransactionToCollection(
-    "income",
-    data,
-    uid,
-    "income",
-    "ArrowUpCircle"
-  );
+  return addTransaction(data, uid, "income", "ArrowUpCircle");
 }
 
 // 🔹 Expense
 export async function addExpense(data: any, uid: string) {
-  return addTransactionToCollection(
-    "expenses",
-    data,
-    uid,
-    "expense",
-    "ArrowDownCircle"
-  );
+  return addTransaction(data, uid, "expense", "ArrowDownCircle");
 }
 
 // 🔹 Investment
 export async function addInvestment(data: any, uid: string) {
-  return addTransactionToCollection(
-    "investments",
-    data,
-    uid,
-    "investment",
-    "TrendingUp"
-  );
+  return addTransaction(data, uid, "investment", "TrendingUp");
 }
 
 // 🔹 Subscription
 export async function addSubscription(data: any, uid: string) {
-  return addTransactionToCollection(
-    "subscriptions",
-    data,
-    uid,
-    "subscription",
-    "Repeat"
-  );
+  return addTransaction(data, uid, "subscription", "Repeat");
 }
 
-// 🔹 Loan Add
-export async function addLoan(data: any, uid: string): Promise<{ id: string } | null> {
+// 🔹 Add Loan (also adds to transactions)
+export async function addLoan(data: any, uid: string) {
   try {
     const txDate = data.paymentDate ? new Date(data.paymentDate) : new Date();
-    const timestamp = Timestamp.fromDate(txDate);
-
     const initialAmount = Number(data.initialAmount) || 0;
 
-    // 1️⃣ Loans collection
     const loanRef = await addDoc(collection(db, "loans"), {
       lender: data.lender,
       initialAmount,
       currentBalance: initialAmount,
       interestRate: Number(data.interestRate) || 0,
       paymentDate: data.paymentDate,
+      nextDueDate: data.paymentDate,
       uid,
       type: "loan",
       icon: "🏦",
-      timestamp,
+      timestamp: Timestamp.fromDate(txDate),
       createdAt: serverTimestamp(),
       emiHistory: [],
     });
 
-    // 2️⃣ LoanHistory collection
+    // Initial loan history
     await addDoc(collection(db, "loanHistory"), {
       loanId: loanRef.id,
       lender: data.lender,
@@ -122,79 +90,91 @@ export async function addLoan(data: any, uid: string): Promise<{ id: string } | 
       uid,
       type: "loan",
       icon: "🏦",
-      timestamp,
+      timestamp: Timestamp.fromDate(txDate),
       createdAt: serverTimestamp(),
+      status: "pending",
+      nextDueDate: data.paymentDate,
     });
 
-    // 3️⃣ Transactions collection
-    await addDoc(collection(db, "transactions"), {
-      title: `Loan from ${data.lender}`,
-      amount: initialAmount,
+    // 🔹 Add loan itself as transaction
+    await addTransaction(
+      { amount: initialAmount, title: `Loan Added - ${data.lender}` },
       uid,
-      type: "loan",
-      icon: "🏦",
-      timestamp,
-      createdAt: serverTimestamp(),
-    });
+      "loan",
+      "🏦"
+    );
 
-    console.log("Loan Added ✅", loanRef.id);
-    return { id: loanRef.id };
+    return { id: loanRef.id, lender: data.lender, currentBalance: initialAmount };
   } catch (error) {
     console.error("Error adding loan:", error);
     return null;
   }
 }
 
-// 🔹 EMI Pay
-export async function payEmi(loanId: string, emiAmount: number, uid: string) {
+// 🔹 Pay EMI (without reducing currentBalance)
+export async function payEmi(
+  loanId: string,
+  uid: string,
+  status: "paid" | "not paid" = "paid",
+  emiAmount?: number
+) {
   const loanRef = doc(db, "loans", loanId);
   const loanSnap = await getDoc(loanRef);
   if (!loanSnap.exists()) return null;
 
   const loanData = loanSnap.data();
-  const newBalance = Number(loanData.currentBalance) - Number(emiAmount);
 
-  // 1️⃣ Update loan document
+  // 🔹 Auto calculate EMI if not provided
+  const emi = emiAmount ?? Math.ceil(Number(loanData.initialAmount) / 12);
+
+  const currentDue = loanData.nextDueDate
+    ? loanData.nextDueDate.toDate()
+    : loanData.paymentDate
+    ? new Date(loanData.paymentDate)
+    : new Date();
+
+  const nextDue = new Date(currentDue);
+  nextDue.setMonth(currentDue.getMonth() + 1);
+
+  // update only emiHistory and nextDueDate
   await updateDoc(loanRef, {
-    currentBalance: newBalance,
     emiHistory: arrayUnion({
-      amount: Number(emiAmount),
+      amount: emi,
       paidAt: serverTimestamp(),
-      status: "paid",
+      status,
     }),
+    nextDueDate: Timestamp.fromDate(nextDue),
   });
 
-  // 2️⃣ Add EMI to loanHistory
   const emiRef = await addDoc(collection(db, "loanHistory"), {
     loanId,
-    amount: Number(emiAmount),
+    amount: emi,
     uid,
     type: "emi",
     icon: "💸",
+    status,
     paidAt: serverTimestamp(),
     createdAt: serverTimestamp(),
-    status: "paid",
+    nextDueDate: Timestamp.fromDate(nextDue),
   });
 
-  // 3️⃣ Add transaction
-  await addDoc(collection(db, "transactions"), {
-    title: `EMI Payment - ${loanData.lender}`,
-    amount: Number(emiAmount),
-    uid,
-    type: "expense",
-    icon: "ArrowDownCircle",
-    timestamp: serverTimestamp(),
-    createdAt: serverTimestamp(),
-  });
-
-  console.log("EMI Paid ✅");
+  // 🔹 Add to transactions if paid
+  if (status === "paid") {
+    await addTransaction(
+      { amount: emi, title: `EMI Payment - ${loanData.lender}` },
+      uid,
+      "expense",
+      "ArrowDownCircle"
+    );
+  }
 
   return {
     id: emiRef.id,
     loanId,
-    amount: Number(emiAmount),
-    status: "paid",
+    amount: emi,
+    status,
     paidAt: new Date(),
     lender: loanData.lender,
+    nextDueDate: nextDue,
   };
 }

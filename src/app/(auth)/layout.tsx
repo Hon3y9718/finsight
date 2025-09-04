@@ -1,4 +1,4 @@
-import { FinSightLogo } from '@/components/icons';
+import { TechiciousLogo } from '@/components/icons';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -15,7 +15,7 @@ export default function AuthLayout({
         <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
             <div className="w-full max-w-md">
                 <div className="mb-8 flex justify-center">
-                    <FinSightLogo className="size-12 text-primary" />
+                    <TechiciousLogo className="size-12 text-primary" />
                 </div>
                 {children}
             </div>
