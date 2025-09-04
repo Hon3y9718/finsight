@@ -13,9 +13,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { auth, db } from "@/firebase";
-
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import FileUploadWrapper from "@/components/FileUploadWrapper";
+import {
+  updatePassword,
+  reauthenticateWithCredential,
+  EmailAuthProvider,
+  signOut,
+} from "firebase/auth";
 
 export default function ProfilePage() {
   const [fullName, setFullName] = useState("");
@@ -23,14 +28,17 @@ export default function ProfilePage() {
   const [photoURL, setPhotoURL] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Password fields
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
   // Fetch user data
   useEffect(() => {
     const fetchUserData = async () => {
       const user = auth.currentUser;
       if (user) {
         setEmail(user.email!);
-
-        // Fetch user doc from Firestore
         const userDocRef = doc(db, "users", user.uid);
         const userSnap = await getDoc(userDocRef);
 
@@ -46,14 +54,13 @@ export default function ProfilePage() {
     fetchUserData();
   }, []);
 
-  // Update profile (name only)
+  // Update profile name
   const handleUpdateProfile = async () => {
     const user = auth.currentUser;
     if (!user) return;
 
-    const nameParts = fullName.split(" ");
-    const firstName = nameParts[0] || "";
-    const lastName = nameParts.slice(1).join(" ") || "";
+    const [firstName, ...rest] = fullName.split(" ");
+    const lastName = rest.join(" ") || "";
 
     await updateDoc(doc(db, "users", user.uid), {
       firstName,
@@ -63,7 +70,7 @@ export default function ProfilePage() {
     alert("Profile updated successfully!");
   };
 
-  // Handle photo upload and save in Firestore
+  // Update photo URL in Firestore
   const handlePhotoUpload = async (url: string) => {
     const user = auth.currentUser;
     if (!user) return;
@@ -76,27 +83,58 @@ export default function ProfilePage() {
     alert("Profile photo updated!");
   };
 
+  // Change password
+  const handleChangePassword = async () => {
+    const user = auth.currentUser;
+    if (!user || !user.email) return;
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      alert("All password fields are required!");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      alert("New password and confirm password do not match!");
+      return;
+    }
+
+    try {
+      // Reauthenticate
+      const credential = EmailAuthProvider.credential(user.email, currentPassword);
+      await reauthenticateWithCredential(user, credential);
+
+      // Update password
+      await updatePassword(user, newPassword);
+
+      alert("Password updated successfully! You will be logged out.");
+
+      // Logout
+      await signOut(auth);
+      window.location.href = "/login"; // redirect to login page
+    } catch (err: any) {
+      console.error(err);
+      alert(err.code || "Failed to update password.");
+    }
+  };
+
   if (loading) return <p className="p-4">Loading...</p>;
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6">
+      {/* Profile Section */}
       <Card>
         <CardHeader>
           <CardTitle>Profile</CardTitle>
           <CardDescription>
-            This is your public display name, email address, and profile photo.
+            Your display name, email, and profile photo.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex items-center gap-4">
             <Avatar className="h-20 w-20">
-              <AvatarImage
-                src={photoURL || "https://placehold.co/80x80"}
-                alt="@user"
-              />
+              <AvatarImage src={photoURL || "https://placehold.co/80x80"} />
               <AvatarFallback>{fullName.charAt(0) || "U"}</AvatarFallback>
             </Avatar>
-
             <FileUploadWrapper onUploaded={handlePhotoUpload}>
               <Button variant="outline">Change Photo</Button>
             </FileUploadWrapper>
@@ -116,10 +154,12 @@ export default function ProfilePage() {
               <Input id="email" type="email" value={email} disabled />
             </div>
           </div>
+
           <Button onClick={handleUpdateProfile}>Update Profile</Button>
         </CardContent>
       </Card>
 
+      {/* Password Section */}
       <Card>
         <CardHeader>
           <CardTitle>Password</CardTitle>
@@ -130,17 +170,32 @@ export default function ProfilePage() {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="current-password">Current Password</Label>
-            <Input id="current-password" type="password" />
+            <Input
+              id="current-password"
+              type="password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="new-password">New Password</Label>
-            <Input id="new-password" type="password" />
+            <Input
+              id="new-password"
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="confirm-password">Confirm New Password</Label>
-            <Input id="confirm-password" type="password" />
+            <Input
+              id="confirm-password"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
           </div>
-          <Button>Change Password</Button>
+          <Button onClick={handleChangePassword}>Change Password</Button>
         </CardContent>
       </Card>
     </div>

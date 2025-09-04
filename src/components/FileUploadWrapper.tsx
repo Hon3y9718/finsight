@@ -1,4 +1,3 @@
-// components/FileUploadWrapper.tsx
 "use client";
 
 import React from "react";
@@ -11,34 +10,22 @@ interface FileUploadWrapperProps {
   children: React.ReactNode;
 }
 
-export default function FileUploadWrapper({
-  onUploaded,
-  children,
-}: FileUploadWrapperProps) {
+export default function FileUploadWrapper({ onUploaded, children }: FileUploadWrapperProps) {
   const handleClick = async () => {
     try {
       const url = await FileUploader.uploadFile();
-      if (url) {
-        // 👇 Save in Firestore
-        const user = auth.currentUser;
-        if (user) {
-          const userRef = doc(db, "users", user.uid);
-          await updateDoc(userRef, {
-            photoURL: url,
-          });
-        }
+      if (!url) return;
 
-        if (onUploaded) {
-          onUploaded(url);
-        }
+      const user = auth.currentUser;
+      if (user) {
+        await updateDoc(doc(db, "users", user.uid), { photoURL: url });
       }
+
+      onUploaded?.(url);
     } catch (err) {
       console.error("Upload failed:", err);
     }
   };
-  return (
-    <div onClick={handleClick} className="cursor-pointer inline-block">
-      {children}
-    </div>
-  );
+
+  return <div onClick={handleClick} className="cursor-pointer inline-block">{children}</div>;
 }
