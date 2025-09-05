@@ -115,12 +115,11 @@ export function StatCards() {
       {stats.map((stat) => (
         <Card
           key={stat.title}
-          className="relative overflow-hidden rounded-2xl border border-gray-800 bg-black shadow-lg transition-all duration-300 hover:scale-[1.03] hover:shadow-xl"
+          className="relative overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-black shadow-lg transition-all duration-300 hover:scale-[1.03] hover:shadow-xl"
         >
-          {/* Icon Gradient only — not full background anymore */}
           <div className="relative z-10 p-5">
             <CardHeader className="flex flex-row items-center justify-between p-0 pb-4">
-              <CardTitle className="text-sm font-medium text-gray-300">
+              <CardTitle className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 {stat.title}
               </CardTitle>
               <div
@@ -131,7 +130,7 @@ export function StatCards() {
             </CardHeader>
 
             <CardContent className="p-0">
-              <div className="text-2xl font-bold text-white mt-1 truncate">
+              <div className="text-2xl font-bold text-gray-900 dark:text-white mt-1 truncate">
                 ₹{stat.amount.toLocaleString("en-IN")}
               </div>
             </CardContent>
