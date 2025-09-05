@@ -115,7 +115,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="w-full max-w-[70rem] mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+    <div className="w-screen w-full max-w-[70rem] mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
       {/* Popup for EMI due */}
       {dueLoan && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50">

@@ -40,7 +40,6 @@ export function StatCards() {
   useEffect(() => {
     if (!userId) return;
 
-    // Real-time transactions
     const transRef = query(
       collection(db, "transactions"),
       where("uid", "==", userId)
@@ -63,7 +62,6 @@ export function StatCards() {
       setExpenses(expenseTotal);
     });
 
-    // Real-time loans
     const loansRef = query(
       collection(db, "loans"),
       where("uid", "==", userId)
@@ -83,7 +81,6 @@ export function StatCards() {
     };
   }, [userId]);
 
-  // ✅ Balance
   const currentBalance = income - expenses + loans;
 
   const stats = [
@@ -91,56 +88,54 @@ export function StatCards() {
       title: "Current Balance",
       amount: currentBalance,
       icon: Wallet,
-      gradient: "from-blue-500 to-indigo-500",
+      gradient: "from-blue-500 via-indigo-500 to-purple-600",
     },
     {
       title: "Total Income",
       amount: income,
       icon: PiggyBank,
-      gradient: "from-green-400 to-emerald-500",
+      gradient: "from-green-400 via-emerald-500 to-teal-500",
     },
     {
       title: "Total Expenses",
       amount: expenses,
       icon: TrendingDown,
-      gradient: "from-red-500 to-pink-500",
+      gradient: "from-red-500 via-pink-500 to-rose-500",
     },
     {
       title: "Loans",
       amount: loans,
       icon: Landmark,
-      gradient: "from-orange-400 to-yellow-500",
+      gradient: "from-yellow-400 via-orange-500 to-amber-500",
     },
   ];
 
   return (
-    <div className="grid gap-24 md:grid-cols-4 lg:grid-cols-4">
+    <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4 mt-6">
       {stats.map((stat) => (
         <Card
           key={stat.title}
-          className="relative overflow-hidden rounded-2xl border border-gray-800 bg-gray-900/60 backdrop-blur-md shadow-lg hover:scale-105 hover:shadow-2xl transition-all duration-300"
+          className="relative overflow-hidden rounded-2xl border border-gray-800 bg-black shadow-lg transition-all duration-300 hover:scale-[1.03] hover:shadow-xl"
         >
-          {/* Gradient border glow */}
-          <div
-            className={`absolute inset-0 bg-gradient-to-r ${stat.gradient} opacity-20 blur-2xl`}
-          ></div>
+          {/* Icon Gradient only — not full background anymore */}
+          <div className="relative z-10 p-5">
+            <CardHeader className="flex flex-row items-center justify-between p-0 pb-4">
+              <CardTitle className="text-sm font-medium text-gray-300">
+                {stat.title}
+              </CardTitle>
+              <div
+                className={`p-2 rounded-full bg-gradient-to-r ${stat.gradient} text-white shadow-md`}
+              >
+                <stat.icon className="h-5 w-5" />
+              </div>
+            </CardHeader>
 
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
-            <CardTitle className="text-sm font-medium text-gray-300">
-              {stat.title}
-            </CardTitle>
-            <div
-              className={`p-2 rounded-full bg-gradient-to-r ${stat.gradient} text-white shadow-md`}
-            >
-              <stat.icon className="h-5 w-5" />
-            </div>
-          </CardHeader>
-
-          <CardContent className="relative z-10">
-            <div className="text-2xl font-bold text-white truncate">
-              ₹{stat.amount.toLocaleString("en-US")}
-            </div>
-          </CardContent>
+            <CardContent className="p-0">
+              <div className="text-2xl font-bold text-white mt-1 truncate">
+                ₹{stat.amount.toLocaleString("en-IN")}
+              </div>
+            </CardContent>
+          </div>
         </Card>
       ))}
     </div>
