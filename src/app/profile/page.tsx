@@ -120,7 +120,7 @@ export default function ProfilePage() {
   if (loading) return <p className="p-4">Loading...</p>;
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6">
+    <div className="w-screen p-4 sm:p-6 lg:p- space-y-6 max-w-[70rem]">
       {/* Profile Section */}
       <Card>
         <CardHeader>

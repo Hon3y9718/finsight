@@ -20,12 +20,12 @@ import Link from "next/link";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [firstName, setFirstName] = useState<string>("");
-  const [lastName, setLastName] = useState<string>("");
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [error, setError] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(false);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleRegister = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -36,9 +36,7 @@ export default function RegisterPage() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      if (!user || !user.uid) {
-        throw new Error("User UID not found after registration");
-      }
+      if (!user || !user.uid) throw new Error("User UID not found");
 
       await setDoc(doc(db, "users", user.uid), {
         firstName,
@@ -50,12 +48,15 @@ export default function RegisterPage() {
 
       router.push("/login");
     } catch (err: any) {
-      if (err.code === "auth/email-already-in-use") {
-        setError("Email already in use.");
-      } else if (err.code === "auth/weak-password") {
-        setError("Password should be at least 6 characters.");
-      } else {
-        setError(err.message || "Registration failed. Try again.");
+      switch (err.code) {
+        case "auth/email-already-in-use":
+          setError("Email already in use.");
+          break;
+        case "auth/weak-password":
+          setError("Password should be at least 6 characters.");
+          break;
+        default:
+          setError(err.message || "Registration failed. Try again.");
       }
     } finally {
       setLoading(false);
@@ -66,11 +67,12 @@ export default function RegisterPage() {
     <div className="min-h-screen flex items-center justify-center bg-darkblue-100 p-4">
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader>
-          <CardTitle className="text-3xl">Register</CardTitle>
+          <CardTitle className="text-2xl">Register</CardTitle>
           <CardDescription>Create your account</CardDescription>
         </CardHeader>
+
         <CardContent className="space-y-4">
-          <form onSubmit={handleRegister}>
+          <form onSubmit={handleRegister} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="firstName">First Name</Label>
               <Input
@@ -127,7 +129,10 @@ export default function RegisterPage() {
               </Button>
               <p className="text-center text-sm text-muted-foreground">
                 Already have an account?{" "}
-                <Link href="/login" className="font-semibold text-primary hover:underline">
+                <Link
+                  href="/login"
+                  className="font-semibold text-primary hover:underline"
+                >
                   Login
                 </Link>
               </p>

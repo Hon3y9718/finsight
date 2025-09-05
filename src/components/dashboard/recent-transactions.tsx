@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { fetchUserTransactions } from "@/lib/fetchUserTransactions";
 import {
   ArrowUpCircle,
   ArrowDownCircle,
@@ -26,6 +25,9 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { auth, db } from "@/firebase";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
 
 const iconMap: Record<string, any> = {
   income: ArrowUpCircle,
@@ -37,18 +39,39 @@ const iconMap: Record<string, any> = {
 
 export function RecentTransactions() {
   const [transactions, setTransactions] = useState<any[]>([]);
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchUserTransactions().then(setTransactions);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) setUserId(user.uid);
+    });
+    return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const transRef = query(
+      collection(db, "transactions"),
+      where("uid", "==", userId)
+    );
+
+    const unsub = onSnapshot(transRef, (snapshot) => {
+      const data: any[] = [];
+      snapshot.forEach((doc) => {
+        data.push({ id: doc.id, ...doc.data() });
+      });
+      setTransactions(data);
+    });
+
+    return () => unsub();
+  }, [userId]);
 
   return (
     <Card className="p-4">
       <CardHeader>
         <CardTitle>Your Transactions</CardTitle>
-        <CardDescription>
-          Your latest income and expenses.
-        </CardDescription>
+        <CardDescription>Your latest income and expenses.</CardDescription>
       </CardHeader>
       <CardContent>
         {transactions.length === 0 ? (
@@ -84,10 +107,11 @@ export function RecentTransactions() {
                           >
                             {IconComp && (
                               <IconComp
-                                className={`h-5 w-5 ${t.type === "income"
+                                className={`h-5 w-5 ${
+                                  t.type === "income"
                                     ? "text-accent-foreground"
                                     : "text-primary"
-                                  }`}
+                                }`}
                               />
                             )}
                           </AvatarFallback>
@@ -108,16 +132,17 @@ export function RecentTransactions() {
                       </Badge>
                     </TableCell>
                     <TableCell
-                      className={`text-right font-medium ${t.type === "income"
+                      className={`text-right font-medium ${
+                        t.type === "income"
                           ? "text-green-500"
                           : t.type === "expense" || t.type === "emi"
-                            ? "text-red-500"
-                            : "text-yellow-500" // loan/investment/subscription
-                        }`}
+                          ? "text-red-500"
+                          : "text-yellow-500"
+                      }`}
                     >
-                      {t.type === "income" ? "+" : ""}₹{Number(t.amount).toFixed(2)}
+                      {t.type === "income" ? "+" : ""}₹
+                      {Number(t.amount).toFixed(2)}
                     </TableCell>
-
                     <TableCell>
                       {dateObj.toLocaleDateString()}{" "}
                       {dateObj.toLocaleTimeString()}

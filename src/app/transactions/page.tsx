@@ -129,7 +129,7 @@ export default function TransactionsPage() {
   }, [fromDate, toDate]);
 
   return (
-    <Card className="w-screen p-4 sm:p-6 lg:p- space-y-6 max-w-6xl">
+    <Card className="w-screen p-4 sm:p-6 lg:p- space-y-6 max-w-[70rem]">
       <CardHeader>
         <CardTitle>All Transactions</CardTitle>
         <CardDescription>

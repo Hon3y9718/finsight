@@ -121,7 +121,7 @@ export default function LoansPage() {
   };
 
   return (
-    <div className="w-screen p-4 sm:p-6 lg:p- space-y-6 max-w-6xl">
+    <div className="w-screen w-full max-auto max-w-[70rem] p-4 sm:p-6 lg:p-8 space-y-6">
       {/* Loans Section */}
       <Card>
         <CardHeader>

@@ -16,9 +16,9 @@ import { useEffect, useState } from "react";
 import { auth, db } from "@/firebase";
 import {
   collection,
-  getDocs,
   query,
   where,
+  onSnapshot,
 } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 
@@ -40,17 +40,17 @@ export function StatCards() {
   useEffect(() => {
     if (!userId) return;
 
-    const fetchData = async () => {
-      // Transactions
-      const transRef = query(
-        collection(db, "transactions"),
-        where("uid", "==", userId)
-      );
-      const transSnap = await getDocs(transRef);
+    // Real-time transactions
+    const transRef = query(
+      collection(db, "transactions"),
+      where("uid", "==", userId)
+    );
+
+    const unsubTrans = onSnapshot(transRef, (snapshot) => {
       let incomeTotal = 0;
       let expenseTotal = 0;
 
-      transSnap.forEach((doc) => {
+      snapshot.forEach((doc) => {
         const data = doc.data();
         if (data.type === "income") {
           incomeTotal += Number(data.amount) || 0;
@@ -61,25 +61,30 @@ export function StatCards() {
 
       setIncome(incomeTotal);
       setExpenses(expenseTotal);
+    });
 
-      // Loans
-      const loansRef = query(
-        collection(db, "loans"),
-        where("uid", "==", userId)
-      );
-      const loansSnap = await getDocs(loansRef);
+    // Real-time loans
+    const loansRef = query(
+      collection(db, "loans"),
+      where("uid", "==", userId)
+    );
+
+    const unsubLoans = onSnapshot(loansRef, (snapshot) => {
       let loanTotal = 0;
-      loansSnap.forEach((doc) => {
+      snapshot.forEach((doc) => {
         loanTotal += Number(doc.data().currentBalance) || 0;
       });
       setLoans(loanTotal);
-    };
+    });
 
-    fetchData();
+    return () => {
+      unsubTrans();
+      unsubLoans();
+    };
   }, [userId]);
 
   // ✅ Balance
-  const currentBalance = (income - expenses) + loans;
+  const currentBalance = income - expenses + loans;
 
   const stats = [
     {
@@ -109,7 +114,7 @@ export function StatCards() {
   ];
 
   return (
-    <div className="grid gap-24 md:grid-cols-4  lg:grid-cols-4">
+    <div className="grid gap-24 md:grid-cols-4 lg:grid-cols-4">
       {stats.map((stat) => (
         <Card
           key={stat.title}
